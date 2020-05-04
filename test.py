@@ -36,21 +36,42 @@ dataset = [
     )
 ]
 
+case = dataset[0]
+
 class TestStringMethods(unittest.TestCase):
+
 
     # def setUp(self):
     #     print("This run at beginning of each test method")
 
+    def test_is_feasible(self):
 
-    def test_is_feasible_method(self):
 
-        case = dataset[0]
         variables = case.variables[:]
 
         self.assertTrue(case.is_feasible(case.b, [VarVal(variables[0], 0), VarVal(variables[1], 1), VarVal(variables[2], 1), VarVal(variables[3], 0), VarVal(variables[4], 0)]))
         self.assertFalse(case.is_feasible(case.b, [VarVal(variables[0], 0), VarVal(variables[1], 0), VarVal(variables[2], 0), VarVal(variables[3], 0), VarVal(variables[4], 0)]))
 
+    def test_get_obj_fn_val(self):
 
+        obj_fn = -8*x1 - 2*x2 - 4*x3 - 7*x4 - 5*x5 + 10
+        var_vals = [
+            VarVal(x1, 1),
+            VarVal(x2, 0),
+            VarVal(x3, 0),
+            VarVal(x4, 0),
+            VarVal(x5, 0),
+        ]
+
+        self.assertEqual(case.get_obj_fn_val(obj_fn, var_vals), 2)
+
+    def test_all_solve_methods_get_same_result(self):
+
+        a = case.solve_by_brutal_divide_and_conquer()
+        b = case.solve_by_implicit_enumeration()
+
+        self.assertEqual(a.obj_val, 4)
+        self.assertEqual(a.obj_val, b.obj_val)
 
 if __name__ == '__main__':
     unittest.main()

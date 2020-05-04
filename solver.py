@@ -7,6 +7,15 @@ class VarVal:
         self.var = var # sympy symbol
         self.val = val # 0 or 1
 
+    def __repr__(self): # for shell
+        return self.get_print_string()
+
+    def __str__(self): # for print
+        return self.get_print_string()
+
+    def get_print_string(self):
+        return str((self.var, self.val))
+
 class Result:
     def __init__(self, obj_val, var_vals):
         self.obj_val = obj_val # numbers or -oo
@@ -58,17 +67,6 @@ class Binary_ILP_case:
     def get_run_count(self):
         return self.i
 
-    def solve(self, debug=False):
-
-    	print("Solving ILP: ", self.obj_fn, "\n")
-
-    	# for var in self.vars:
-
-    	# 	print(var)
-    	# 	a = Poly(self.obj_fn, var)
-    	# 	print('Coef:', a.coeffs())
-    	# 	print('All coef', a.all_coeffs())
-
     def get_substitute_b(self, old_b, var, val):
 
         result = []
@@ -80,20 +78,23 @@ class Binary_ILP_case:
 
     def is_feasible(self, b, var_vals):
 
-        print('check feasible', b)
-
         for lessThanEq in b:
             lhs = lessThanEq.lhs
             for item in var_vals:
-                print('subs var:', item.var, item.val)
                 lhs = lhs.subs(item.var, item.val)
-                print('updated lhs', lhs)
-
 
             if lhs > lessThanEq.rhs:
                 return False
 
         return True
+
+    def get_obj_fn_val(self, obj_fn, var_vals):
+
+        obj_val = obj_fn
+        for item in var_vals:
+            obj_val = obj_val.subs(item.var, item.val)
+
+        return obj_val
 
 
     def solve_by_brutal_divide_and_conquer(self, variables=None, obj_fn=None, b=None):
@@ -114,7 +115,7 @@ class Binary_ILP_case:
         # print('b:', b)
 
         # if number of free vars is greater than 1, pick one var, update objective function and inequality constraints
-        if(len(variables) > 1):
+        if len(variables) > 1:
 
             fix_var = variables[0] # modify vars list
 
@@ -184,6 +185,9 @@ class Binary_ILP_case:
         return self.variables
 
     def solve_by_implicit_enumeration(self, variables=None, obj_fn=None, b=None):
+
+        self.i += 1
+
         # set default vars
         if variables == None:
             variables = self.variables[:]
@@ -196,27 +200,53 @@ class Binary_ILP_case:
 
 
         stopper = 50
-        best_obj_val = -oo
-        var_vals = ()
+        
+        best_result = Result(obj_val = -oo, var_vals = [])
+
+        # while len(variables) > 0:
 
 
-        print('test result', test)
-
-        while len(variables) > 0:
-
-            fix_var = variables.pop(0)
+        fix_var = variables.pop(0)
 
 
-            stopper -= 1
-            if stopper == 0:
-                return
+        var_vals = [VarVal(fix_var, 0)]
 
         # branch to fix_var = 0
+        for var in variables:
+            var_vals.append(VarVal(var, 0))
 
+        if self.is_feasible(b, var_vals): # best case scenario
+            obj_val = self.get_obj_fn_val(obj_fn, var_vals)
+            return Result(obj_val, var_vals)
 
+        elif len(variables)>0: # can be divided further
+            
+            obj_zero = obj_fn.subs(fix_var, 0)
+            b_zero = self.get_substitute_b(b, fix_var, 0)
+            result_zero = self.solve_by_brutal_divide_and_conquer(variables[:], obj_zero, b_zero)
+
+            if result_zero.obj_val > best_result.obj_val:
+                best_result = Result(result_zero.obj_val, [VarVal(fix_var, 0)] + result_zero.var_vals)
+        
         # branch to fix_var = 1
 
-        # Thsi is going to be a while loop
+        var_vals[0].val = 1
+        
+        if self.is_feasible(b, var_vals):
+            obj_val = self.get_obj_fn_val(obj_fn, var_vals)
+
+            if result_zero.obj_val > best_result.obj_val:
+                best_result = Result(obj_val, var_vals)
+
+        elif len(variables)>0:
+
+            obj_one = obj_fn.subs(fix_var, 1)
+            b_one = self.get_substitute_b(b, fix_var, 1)
+            result_one = self.solve_by_brutal_divide_and_conquer(variables[:], obj_one, b_one)
+
+            if result_one.obj_val > best_result.obj_val:
+                best_result = Result(result_one.obj_val, [VarVal(fix_var, 1)] + result_one.var_vals)
+
 
         # When set all free variables to 0, is feasible?
             # calculate best case z in this scenario
@@ -226,8 +256,7 @@ class Binary_ILP_case:
             # else
                 # do nothing
         # branch further
-
-
+        return best_result
 
 if __name__ == '__main__':
 
@@ -235,7 +264,7 @@ if __name__ == '__main__':
     x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
     variables = [x1, x2, x3, x4, x5]
 
-    objective_fn = -8*x1 + -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10  # expression
+    objective_fn = -8*x1 -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10  # expression
 
     # Constraints
     # b1, b2 are sympy expressions here
@@ -249,3 +278,5 @@ if __name__ == '__main__':
 
     case1.reset_counter()
     result = case1.solve_by_implicit_enumeration()
+    print("Result - implicit enumeration: ", result)
+    print("Run count", case1.get_run_count())
