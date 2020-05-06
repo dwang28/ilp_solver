@@ -206,15 +206,21 @@ class Binary_ILP_case:
 
     def solve_by_implicit_enumeration(self, variables, obj_fn, b):
 
+        # implicit enumeration assume all vars has a negative coefficient in objective function and thus best obj val will be set all vars to 0
+
+
         self.i += 1
+
+        # print('running with vars:', variables)
+        # print('fn:', obj_fn)
+        # print('b:', b)
 
         best_result = Result(obj_val = -oo, var_vals = [])
 
-
         fix_var = variables.pop(0)
 
-
         # branch to fix_var = 0
+
         var_vals = [VarVal(fix_var, 0)]
 
         for var in variables:
@@ -222,6 +228,8 @@ class Binary_ILP_case:
 
         if self.is_feasible(b, var_vals): # best case scenario
             obj_val = self.get_obj_fn_val(obj_fn, var_vals)
+
+            # print('all 0 is feasible, returning val:', obj_val)
             return Result(obj_val, var_vals)
 
         elif len(variables)>0: # can be divided further
@@ -231,6 +239,7 @@ class Binary_ILP_case:
             result_zero = self.solve_by_implicit_enumeration(variables[:], obj_zero, b_zero)
 
             if result_zero.obj_val > best_result.obj_val:
+                # print('best result updated from: ', best_result.obj_val, ' to: ', result_zero.obj_val)
                 best_result = Result(result_zero.obj_val, [VarVal(fix_var, 0)] + result_zero.var_vals)
 
         # branch to fix_var = 1
@@ -240,7 +249,8 @@ class Binary_ILP_case:
         if self.is_feasible(b, var_vals):
             obj_val = self.get_obj_fn_val(obj_fn, var_vals)
 
-            if result_zero.obj_val > best_result.obj_val:
+            if obj_val > best_result.obj_val:
+                # print('best result updated from: ', best_result.obj_val, ' to: ', obj_val)
                 best_result = Result(obj_val, var_vals)
 
         elif len(variables)>0:
@@ -250,8 +260,11 @@ class Binary_ILP_case:
             result_one = self.solve_by_implicit_enumeration(variables[:], obj_one, b_one)
 
             if result_one.obj_val > best_result.obj_val:
+                # print('best result updated from: ', best_result.obj_val, ' to: ', result_one.obj_val)
                 best_result = Result(result_one.obj_val, [VarVal(fix_var, 1)] + result_one.var_vals)
 
+
+        # print('returning best result', best_result)
         return best_result
 
 if __name__ == '__main__':
@@ -269,8 +282,8 @@ if __name__ == '__main__':
 
     case1 = Binary_ILP_case(variables=variables, b=[b1, b2], obj_fn=objective_fn,  maximize=True)
 
-    result = case1.solve(case1.algo.brutal_explicit_enumeration, print_run_count=True)
-    print('Result - brutal brutal_explicit_enumeration:', result)
+    # result = case1.solve(case1.algo.brutal_explicit_enumeration, print_run_count=True)
+    # print('Result - brutal brutal_explicit_enumeration:', result)
     result = case1.solve(case1.algo.implicit_enumeration, print_run_count=True)
-    print('Result - brutal implicit_enumeration:', result)
+    print('Result - implicit_enumeration:', result)
 
