@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
 from sympy import *
+from itertools import product
 
 class VarVal:
     def __init__(self, var, val):
@@ -183,8 +183,21 @@ class Binary_ILP_case:
 
     def solve_by_brutal_explicit_enumeration(self, variables, obj_fn, b):
 
-        print('solving by explicit enumeration')
+        all_cases = list(product([0, 1], repeat=len(variables)))
 
+        best_result = Result(obj_val = -oo, var_vals = [])
+
+        for case in all_cases:
+            var_vals = []
+            for i in range(0, len(variables)):
+                var_vals.append(VarVal(variables[i], case[i]))
+
+            obj_val = self.get_obj_fn_val(obj_fn, var_vals)
+            self.i += 1
+            if obj_val > best_result.obj_val and self.is_feasible(b, var_vals):
+                best_result = Result(obj_val, var_vals)
+
+        return best_result
 
     def sort_vars_by_priority_for_implicit_enumeration(self, variables):
 
@@ -249,12 +262,14 @@ if __name__ == '__main__':
 
     objective_fn = -8*x1 -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10  # expression
 
-    # Constraints
-    # b1, b2 are sympy expressions here
+    # # Constraints
+    # # b1, b2 are sympy expressions here
     b1 = -3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2
     b2 = -5*x1 - 3*x2 - 2*x3 - x4 + x5 <= -4
 
     case1 = Binary_ILP_case(variables=variables, b=[b1, b2], obj_fn=objective_fn,  maximize=True)
 
-    result = case1.solve(cases1.algo.implicit_enumeration, print_run_count=True)
+    result = case1.solve(case1.algo.brutal_explicit_enumeration, print_run_count=True)
+    print('Result - brutal brutal_explicit_enumeration:', result)
+    # result = case1.solve(cases1.algo.implicit_enumeration, print_run_count=True)
 

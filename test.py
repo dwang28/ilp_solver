@@ -50,10 +50,12 @@ class TestStringMethods(unittest.TestCase):
     def test_all_solve_methods_get_same_result(self):
 
         a = case.solve(case.algo.brutal_divide_and_conquer)
-        b = case.solve(case.algo.implicit_enumeration)
+        b = case.solve(case.algo.brutal_explicit_enumeration)
+        c = case.solve(case.algo.implicit_enumeration)
 
         self.assertEqual(a.obj_val, 4)
         self.assertEqual(a.obj_val, b.obj_val)
+        self.assertEqual(a.obj_val, c.obj_val)
 
 if __name__ == '__main__':
     unittest.main()
