@@ -228,7 +228,7 @@ class Binary_ILP_case:
 
             obj_zero = obj_fn.subs(fix_var, 0)
             b_zero = self.get_substitute_b(b, fix_var, 0)
-            result_zero = self.solve_by_brutal_divide_and_conquer(variables[:], obj_zero, b_zero)
+            result_zero = self.solve_by_implicit_enumeration(variables[:], obj_zero, b_zero)
 
             if result_zero.obj_val > best_result.obj_val:
                 best_result = Result(result_zero.obj_val, [VarVal(fix_var, 0)] + result_zero.var_vals)
@@ -247,7 +247,7 @@ class Binary_ILP_case:
 
             obj_one = obj_fn.subs(fix_var, 1)
             b_one = self.get_substitute_b(b, fix_var, 1)
-            result_one = self.solve_by_brutal_divide_and_conquer(variables[:], obj_one, b_one)
+            result_one = self.solve_by_implicit_enumeration(variables[:], obj_one, b_one)
 
             if result_one.obj_val > best_result.obj_val:
                 best_result = Result(result_one.obj_val, [VarVal(fix_var, 1)] + result_one.var_vals)
@@ -271,5 +271,6 @@ if __name__ == '__main__':
 
     result = case1.solve(case1.algo.brutal_explicit_enumeration, print_run_count=True)
     print('Result - brutal brutal_explicit_enumeration:', result)
-    # result = case1.solve(cases1.algo.implicit_enumeration, print_run_count=True)
+    result = case1.solve(case1.algo.implicit_enumeration, print_run_count=True)
+    print('Result - brutal implicit_enumeration:', result)
 
