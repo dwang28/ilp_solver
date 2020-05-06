@@ -4,23 +4,6 @@ from sympy import *
 from solver import *
 
 
-# Assertion types
-
-    # def test_upper(self):
-    #     self.assertEqual('foo'.upper(), 'FOO')
-
-    # def test_isupper(self):
-    #     self.assertTrue('FOO'.isupper())
-    #     self.assertFalse('Foo'.isupper())
-
-    # def test_split(self):
-    #     s = 'hello world'
-    #     self.assertEqual(s.split(), ['hello', 'world'])
-    #     # check that s.split fails when the separator is not a string
-    #     with self.assertRaises(TypeError):
-    #         s.split(2)
-
-
 # book example
 x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
 b1 = -3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2
@@ -39,7 +22,6 @@ dataset = [
 case = dataset[0]
 
 class TestStringMethods(unittest.TestCase):
-
 
     # def setUp(self):
     #     print("This run at beginning of each test method")
@@ -67,8 +49,8 @@ class TestStringMethods(unittest.TestCase):
 
     def test_all_solve_methods_get_same_result(self):
 
-        a = case.solve_by_brutal_divide_and_conquer()
-        b = case.solve_by_implicit_enumeration()
+        a = case.solve(case.algo.brutal_divide_and_conquer)
+        b = case.solve(case.algo.implicit_enumeration)
 
         self.assertEqual(a.obj_val, 4)
         self.assertEqual(a.obj_val, b.obj_val)
