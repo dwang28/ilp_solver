@@ -21,7 +21,7 @@ dataset = [
 
 case = dataset[0]
 
-class TestStringMethods(unittest.TestCase):
+class TestSolveMethods(unittest.TestCase):
 
     # def setUp(self):
     #     print("This run at beginning of each test method")

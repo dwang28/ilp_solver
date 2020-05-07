@@ -83,7 +83,11 @@ class Binary_ILP_case:
 
     def is_feasible(self, b, var_vals):
 
+        print('is_feasible check, ', b, var_vals)
+
         for lessThanEq in b:
+
+            print('lessThanEq, constraints: ', lessThanEq)
             lhs = lessThanEq.lhs
             for item in var_vals:
                 lhs = lhs.subs(item.var, item.val)
