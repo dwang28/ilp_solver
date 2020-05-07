@@ -74,20 +74,31 @@ class Binary_ILP_case:
 
     def get_substitute_b(self, old_b, var, val):
 
+        # to do: add check in this fxn, if result is false, the function that call this function should stop evaluate this possibility
+        # print('calc get_substitute_b,', old_b, var, val)
+
         result = []
 
         for inEq in old_b:
             result.append(inEq.subs(var, val))
 
+        # print('sub b result', result)
+
         return result
 
     def is_feasible(self, b, var_vals):
 
-        print('is_feasible check, ', b, var_vals)
+        # print('is_feasible check, ', b, var_vals)
 
         for lessThanEq in b:
 
-            print('lessThanEq, constraints: ', lessThanEq)
+            if lessThanEq == False:
+                return False
+
+            if lessThanEq == True:
+                continue
+
+            # print('lessThanEq, constraints: ', lessThanEq)
             lhs = lessThanEq.lhs
             for item in var_vals:
                 lhs = lhs.subs(item.var, item.val)
@@ -273,21 +284,14 @@ class Binary_ILP_case:
 
 if __name__ == '__main__':
 
-    # Test case data
     x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
-    variables = [x1, x2, x3, x4, x5]
+    obj_fn = -8*x1 - x2 - x3 - 5*x4 - 10*x5 + 19
+    b = [-7*x4 <= 9, 2*x2 - 6*x4 - 3*x5 <= -1, 10*x1 - 3*x2 - 7*x3 <= 15]
+    
+    case = Binary_ILP_case(variables=[x1, x2, x3, x4, x5], b=b, obj_fn=obj_fn,  maximize=True)
 
-    objective_fn = -8*x1 -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10  # expression
-
-    # # Constraints
-    # # b1, b2 are sympy expressions here
-    b1 = -3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2
-    b2 = -5*x1 - 3*x2 - 2*x3 - x4 + x5 <= -4
-
-    case1 = Binary_ILP_case(variables=variables, b=[b1, b2], obj_fn=objective_fn,  maximize=True)
-
-    # result = case1.solve(case1.algo.brutal_explicit_enumeration, print_run_count=True)
+    # result = case1.hcase1.algo.brutal_explicit_enumeration, print_run_count=True)
     # print('Result - brutal brutal_explicit_enumeration:', result)
-    result = case1.solve(case1.algo.implicit_enumeration, print_run_count=True)
+    result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
     print('Result - implicit_enumeration:', result)
 

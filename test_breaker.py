@@ -72,15 +72,14 @@ class TestRandomData(unittest.TestCase):
         print('b: ', case.b)
 
         a = case.solve(case.algo.brutal_explicit_enumeration)
-
-        print('result a:', a)
         b = case.solve(case.algo.brutal_divide_and_conquer)
-        print('result b: ', b)
         c = case.solve(case.algo.implicit_enumeration)
 
-        self.assertEqual(a.obj_val, 4)
+        self.assertEqual(a.obj_val, 14)
         self.assertEqual(a.obj_val, b.obj_val)
         self.assertEqual(a.obj_val, c.obj_val)
+
+        print('Result: ', c)
 
 
 
