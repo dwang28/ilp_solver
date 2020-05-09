@@ -52,11 +52,29 @@ class Binary_ILP_case:
         self.obj_fn = obj_fn
         self.b = b # all inEquality functions must be less than for now.
 
+        self._variables = None
+        self._obj_fn = None
+        self._b = None
+
+        self.var_ref = [] # True means _xi = xi, False means _xi = (1-xi)
+
         self.i = 0
+        self.algo = self.get_supported_algos()
 
         self.goal = 'maximize'
+
         if(maximize == False):
             self.goal = 'minimize'
+
+        self.pre_process()
+
+    def pre_process(self):
+
+        print('pre_process start:')
+        print('obj_fn:', self.obj_fn, self._obj_fn)
+
+
+    def get_supported_algos(self):
 
         class Algo:
             def __init__(self):
@@ -64,7 +82,7 @@ class Binary_ILP_case:
                 self.brutal_explicit_enumeration = 'brutal_explicit_enumeration'
                 self.implicit_enumeration = 'implicit_enumeration'
 
-        self.algo = Algo()
+        return Algo()
 
     def reset_counter(self):
         self.i = 0
@@ -285,13 +303,19 @@ class Binary_ILP_case:
 if __name__ == '__main__':
 
     x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
-    obj_fn = -8*x1 - x2 - x3 - 5*x4 - 10*x5 + 19
-    b = [-7*x4 <= 9, 2*x2 - 6*x4 - 3*x5 <= -1, 10*x1 - 3*x2 - 7*x3 <= 15]
-    
+    obj_fn = -8*x1 - x2 - x3 - 5*x4 + 10*x5 + 19
+    b = [
+        -7*x4 <= 9,
+        2*x2 - 6*x4 - 3*x1 <= -1,
+        10*x1 - 3*x2 - 7*x3 <= 15
+    ]
+
     case = Binary_ILP_case(variables=[x1, x2, x3, x4, x5], b=b, obj_fn=obj_fn,  maximize=True)
 
     # result = case1.hcase1.algo.brutal_explicit_enumeration, print_run_count=True)
     # print('Result - brutal brutal_explicit_enumeration:', result)
     result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
+    print('Result - brutal:', result)
+    result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
     print('Result - implicit_enumeration:', result)
 
