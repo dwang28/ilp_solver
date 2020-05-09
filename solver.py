@@ -71,6 +71,7 @@ class Binary_ILP_case:
         self._b = b
 
         self.var_ref = {} # True means _xi = xi, False means _xi = (1-xi)
+        self.counter_var_ref = {} # get x1 from _x1
 
         self.i = 0
         self.algo = self.get_supported_algos()
@@ -85,17 +86,15 @@ class Binary_ILP_case:
 
     def pre_process(self):
 
-        print('pre_process start:')
-
         # update variable reference and objective fxn reference
         obj_args = self.obj_fn.args
 
-        # when calling args, sympy will change the order of variables appearing in expression with the constant at the first place, and 
+        # when calling args, sympy will change the order of variables appearing in expression with the constant at the first place, and
         # some arbitary order for the rest of the variables
         for item in obj_args:
 
             if not isinstance(item, numbers.Integer):
-                
+
                 coeff = item.args[0]
                 var = item.args[1]
 
@@ -103,7 +102,7 @@ class Binary_ILP_case:
                 _var = Symbol(_var)
                 self._variables.append(_var)
 
-                if coeff > 0:   
+                if coeff > 0:
                     self.var_ref[var] = VarRef(_var, True) # True for isReverse
                     self._obj_fn = self._obj_fn.subs(var, (1-_var))
                     self._b =  self.get_substitute_b(self._b, var, (1-_var))
@@ -113,18 +112,17 @@ class Binary_ILP_case:
                     self._obj_fn = self._obj_fn.subs(var, _var)
                     self._b =  self.get_substitute_b(self._b, var, _var)
 
-        print(self.variables)
-        print(self._variables)
-        print('Result', self.obj_fn)
-        print('Result', self._obj_fn)
-        print('Result', self.b)
-        print('Result', self._b)
+                self.counter_var_ref[_var] = var
+
+        # print(self.variables)
+        # print(self._variables)
+        # print('Result', self.obj_fn)
+        # print('Result', self._obj_fn)
+        # print('Result', self.b)
+        # print('Result', self._b)
 
     def _(self, var):
-
         return self.var_ref[var].counter_part
-
-
 
     def get_preprocessed_result(self):
 
@@ -196,13 +194,34 @@ class Binary_ILP_case:
 
         return obj_val
 
+    def translate_result(self, result):
 
+        var_vals_ref = {}
+
+        for item in result.var_vals:
+
+            _var = item.var
+            val = item.val
+
+            var = self.counter_var_ref[_var]
+
+            if self.var_ref[var].isReverse:
+                var_vals_ref[var] = 1-val
+            else:
+                var_vals_ref[var] = val
+
+        sorted_var_vals = [] #based on order of vars
+
+        for var in self.variables:
+            sorted_var_vals.append(VarVal(var, var_vals_ref[var]))
+
+        return Result(result.obj_val, sorted_var_vals)
 
     def solve(self, algo, print_run_count=False):
 
-        variables = self.variables[:]
-        obj_fn = self.obj_fn
-        b = self.b[:]
+        variables = self._variables[:]
+        obj_fn = self._obj_fn
+        b = self._b[:]
 
         self.reset_counter()
 
@@ -218,7 +237,7 @@ class Binary_ILP_case:
         if print_run_count:
             print("Run count", self.get_run_count())
 
-        return result
+        return self.translate_result(result)
 
     def solve_by_brutal_divide_and_conquer(self, variables, obj_fn, b):
 
@@ -378,8 +397,8 @@ if __name__ == '__main__':
 
     # result = case1.hcase1.algo.brutal_explicit_enumeration, print_run_count=True)
     # print('Result - brutal brutal_explicit_enumeration:', result)
-    # result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
-    # print('Result - brutal divide and conquer:', result)
-    # result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
-    # print('Result - implicit_enumeration:', result)
+    result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
+    print('Result - brutal divide and conquer:', result)
+    result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
+    print('Result - implicit_enumeration:', result)
 

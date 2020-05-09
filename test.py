@@ -2,32 +2,33 @@ import unittest
 
 from sympy import *
 from solver import *
+from test_case_lib import *
 
 
 # book example
-x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
-b1 = -3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2
-b2 = -5*x1 - 3*x2 - 2*x3 - x4 + x5 <= -4
-objective_fn = -8*x1 + -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10  # sympy expression
+# x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
+# b1 = -3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2
+# b2 = -5*x1 - 3*x2 - 2*x3 - x4 + x5 <= -4
+# objective_fn = -8*x1 + -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10
 
 
-dataset = [
-    Binary_ILP_case(
-        variables = [x1, x2, x3, x4, x5],
-        b = [b1, b2],
-        obj_fn = objective_fn
-    )
-]
+# dataset = [
+#     Binary_ILP_case(
+#         variables = [x1, x2, x3, x4, x5],
+#         b = [b1, b2],
+#         obj_fn = objective_fn
+#     )
+# ]
 
-case = dataset[0]
+cases = get_cases()
+case = cases[1].case
 
 class TestSolveMethods(unittest.TestCase):
 
     # def setUp(self):
     #     print("This run at beginning of each test method")
 
-    def test_is_feasible(self):
-
+    def test_is_feasible_fn(self):
 
         variables = case.variables[:]
 
@@ -63,9 +64,17 @@ class TestSolveMethods(unittest.TestCase):
 
     def test_all_solve_methods_get_same_result(self):
 
-        a = case.solve(case.algo.brutal_divide_and_conquer)
-        b = case.solve(case.algo.brutal_explicit_enumeration)
+        case = cases[1].case
+        print('case', cases[1])
+
+        a = case.solve(case.algo.brutal_explicit_enumeration)
+
+        print('a result', a)
+
+
+        b = case.solve(case.algo.brutal_divide_and_conquer)
         c = case.solve(case.algo.implicit_enumeration)
+
 
         self.assertEqual(a.obj_val, 4)
         self.assertEqual(a.obj_val, b.obj_val)
