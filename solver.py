@@ -41,6 +41,20 @@ class Result:
 
         return str(result_obj)
 
+class VarRef:
+    def __init__(self, counter_part, isReverse):
+        self.counter_part = counter_part # sympy symbol, example: the counter part of x1 should be a sympy symbold _x1
+        self.isReverse = isReverse # if true, x1 = 1 - _x1
+
+    def __repr__(self): # for shell
+        return self.get_print_string()
+
+    def __str__(self): # for print
+        return self.get_print_string()
+
+    def get_print_string(self):
+        return str((self.counter_part, 'Reverse? ', self.isReverse))
+
 class Binary_ILP_case:
     # variables
     # obj_fn [sympy expression]: the function to maximize or minimize
@@ -52,11 +66,11 @@ class Binary_ILP_case:
         self.obj_fn = obj_fn
         self.b = b # all inEquality functions must be less than for now.
 
-        self._variables = None
-        self._obj_fn = None
-        self._b = None
+        self._variables = []
+        self._obj_fn = obj_fn
+        self._b = b
 
-        self.var_ref = [] # True means _xi = xi, False means _xi = (1-xi)
+        self.var_ref = {} # True means _xi = xi, False means _xi = (1-xi)
 
         self.i = 0
         self.algo = self.get_supported_algos()
@@ -68,11 +82,57 @@ class Binary_ILP_case:
 
         self.pre_process()
 
+
     def pre_process(self):
 
         print('pre_process start:')
-        print('obj_fn:', self.obj_fn, self._obj_fn)
 
+        # update variable reference and objective fxn reference
+        obj_args = self.obj_fn.args
+
+        # when calling args, sympy will change the order of variables appearing in expression with the constant at the first place, and 
+        # some arbitary order for the rest of the variables
+        for item in obj_args:
+
+            if not isinstance(item, numbers.Integer):
+                
+                coeff = item.args[0]
+                var = item.args[1]
+
+                _var = "_" + str(var)
+                _var = Symbol(_var)
+                self._variables.append(_var)
+
+                if coeff > 0:   
+                    self.var_ref[var] = VarRef(_var, True) # True for isReverse
+                    self._obj_fn = self._obj_fn.subs(var, (1-_var))
+                    self._b =  self.get_substitute_b(self._b, var, (1-_var))
+
+                else:
+                    self.var_ref[var] = VarRef(_var, False)
+                    self._obj_fn = self._obj_fn.subs(var, _var)
+                    self._b =  self.get_substitute_b(self._b, var, _var)
+
+        print(self.variables)
+        print(self._variables)
+        print('Result', self.obj_fn)
+        print('Result', self._obj_fn)
+        print('Result', self.b)
+        print('Result', self._b)
+
+    def _(self, var):
+
+        return self.var_ref[var].counter_part
+
+
+
+    def get_preprocessed_result(self):
+
+        return {
+            '_variables' : self._variables,
+            '_obj_fn' : self._obj_fn,
+            '_b': self._b
+        }
 
     def get_supported_algos(self):
 
@@ -94,6 +154,8 @@ class Binary_ILP_case:
 
         # to do: add check in this fxn, if result is false, the function that call this function should stop evaluate this possibility
         # print('calc get_substitute_b,', old_b, var, val)
+        # val could be value, or the counter part of var
+        # example: get_substitute_b(b, x1, (1-_x1))
 
         result = []
 
@@ -304,18 +366,20 @@ if __name__ == '__main__':
 
     x1, x2, x3, x4, x5 = symbols('x1, x2, x3, x4, x5')
     obj_fn = -8*x1 - x2 - x3 - 5*x4 + 10*x5 + 19
-    b = [
-        -7*x4 <= 9,
-        2*x2 - 6*x4 - 3*x1 <= -1,
-        10*x1 - 3*x2 - 7*x3 <= 15
-    ]
+    # b = [
+    #     -7*x4 <= 9,
+    #     2*x2 - 6*x4 - 3*x1 <= -1,
+    #     10*x1 - 3*x2 - 7*x3 <= 15
+    # ]
+
+    b = [x5 <=2]
 
     case = Binary_ILP_case(variables=[x1, x2, x3, x4, x5], b=b, obj_fn=obj_fn,  maximize=True)
 
     # result = case1.hcase1.algo.brutal_explicit_enumeration, print_run_count=True)
     # print('Result - brutal brutal_explicit_enumeration:', result)
-    result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
-    print('Result - brutal:', result)
-    result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
-    print('Result - implicit_enumeration:', result)
+    # result = case.solve(case.algo.brutal_divide_and_conquer, print_run_count=True)
+    # print('Result - brutal divide and conquer:', result)
+    # result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
+    # print('Result - implicit_enumeration:', result)
 

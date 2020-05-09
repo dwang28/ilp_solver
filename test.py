@@ -47,6 +47,20 @@ class TestSolveMethods(unittest.TestCase):
 
         self.assertEqual(case.get_obj_fn_val(obj_fn, var_vals), 2)
 
+
+    def test_pre_proces_fn(self):
+
+        c = Binary_ILP_case(
+            variables = [x1, x2, x3, x4, x5],
+            obj_fn = -8*x1 - x2 - x3 - 5*x4 + 10*x5 + 19,
+            b = [x5 <=2]
+        )
+
+        sample = c.get_preprocessed_result()
+        self.assertEqual(sample['_obj_fn'], -8*c._(x1) - c._(x2) - c._(x3) - 5*c._(x4) - 10*c._(x5) + 29)
+        self.assertEqual(sample['_b'][0], 1 - c._(x5) <= 2)
+
+
     def test_all_solve_methods_get_same_result(self):
 
         a = case.solve(case.algo.brutal_divide_and_conquer)
