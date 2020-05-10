@@ -56,11 +56,9 @@ def get_cases():
     b = [-7*x4 <= 9,    2*x2 - 6*x4 - 3*x5 <= -1,  10*x1 - 3*x2 - 7*x3 <= 15]
     cases.append(Case([x1, x2, x3, x4, x5], obj_fn, b, expected_obj_val = 14))
 
-    obj_fn = -8*x1 - x2 - x3 - 5*x4 + 10*x5 + 19
-
     # 1
     b = [-3*x1 - 3*x2 + x3 + 2*x4 + 3*x5 <= -2, -5*x1 - 3*x2 - 2*x3 - x4 + x5 <= -4]
-    objective_fn = -8*x1 + -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10
+    obj_fn = -8*x1 + -2*x2 - 4*x3 - 7*x4 - 5*x5 + 10
     cases.append(Case([x1, x2, x3, x4, x5], obj_fn, b, expected_obj_val = 4))
 
     return cases

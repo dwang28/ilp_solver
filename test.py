@@ -65,20 +65,21 @@ class TestSolveMethods(unittest.TestCase):
     def test_all_solve_methods_get_same_result(self):
 
         case = cases[1].case
-        print('case', cases[1])
+        # print('case', cases[1])
 
         a = case.solve(case.algo.brutal_explicit_enumeration)
 
         b = case.solve(case.algo.brutal_divide_and_conquer)
         c = case.solve(case.algo.implicit_enumeration)
-        print('a result', a)
-        print('b result', b)
-        print('c result', c)
+
+        # print('a result', a)
+        # print('b result', b)
+        # print('c result', c)
 
 
-        # self.assertEqual(a.obj_val, 4)
-        # self.assertEqual(a.obj_val, b.obj_val)
-        # self.assertEqual(a.obj_val, c.obj_val)
+        self.assertEqual(a.obj_val, 4)
+        self.assertEqual(a.obj_val, b.obj_val)
+        self.assertEqual(a.obj_val, c.obj_val)
 
 if __name__ == '__main__':
     unittest.main()
