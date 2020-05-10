@@ -4,6 +4,10 @@ import random
 from sympy import *
 from solver import *
 
+# To do:
+#   if test failed:
+#       print json
+
 class TestRandomData(unittest.TestCase):
 
 
@@ -41,7 +45,7 @@ class TestRandomData(unittest.TestCase):
         b = []
 
         for i in range(0, number_of_constraints):
-                
+
             expr = 0
             # generate a single lessThan inequlaity equation
             number_of_vars_in_constraint = random.randint(1, len(variables))
@@ -50,7 +54,7 @@ class TestRandomData(unittest.TestCase):
             for j in range(0, len(variables)):
                 expr += random.randint(-10, 10) * on_off[j] * variables[j]
 
-            b.append(expr <= random.randint(-20, 20)) 
+            b.append(expr <= random.randint(-20, 20))
 
         return b
 
@@ -83,7 +87,7 @@ class TestRandomData(unittest.TestCase):
 
 
 
-    # def test_run(self): 
+    # def test_run(self):
 
     #     number_of_vars = random.randint(2, 6)
     #     number_of_constraints = random.randint(1, 3)
