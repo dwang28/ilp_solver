@@ -128,8 +128,12 @@ class Binary_ILP_case:
 
             if not isinstance(item, numbers.Integer):
 
-                coeff = item.args[0]
-                var = item.args[1]
+                if not isinstance(item, symbol.Symbol):
+                    coeff = item.args[0]
+                    var = item.args[1]
+                else:
+                    coeff = 1
+                    var = item
 
                 _var = "_" + str(var)
                 _var = Symbol(_var)
@@ -228,6 +232,9 @@ class Binary_ILP_case:
         return obj_val
 
     def translate_result(self, result):
+
+        if result.obj_val == -oo:
+            return result
 
         var_vals_ref = {}
 

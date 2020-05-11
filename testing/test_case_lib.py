@@ -10,7 +10,12 @@ def _get_vars_from_obj_fn(obj_fn):
 
     for expr in obj_args:
         if not isinstance(expr, numbers.Integer):
-            var = expr.args[1]
+
+            if not isinstance(expr, symbol.Symbol):
+                var = expr.args[1]
+            else:
+                var = expr
+
             vars_in_obj_fn.append(var)
 
     sorted_variables = []
@@ -46,11 +51,16 @@ all_cases = [{
     # 2 with positive coefficient in obj_fn z
     'obj_fn': -8*x1 - x2 - x3 - 5*x4 + 10*x5 + 19,
     'b': [x5 <=2],
-    'obj_val': 14
+    'obj_val': 29
 },{
     # 3
     'obj_fn': 10*x1 - 10*x2 - 9*x3 - 4*x4 + 8*x5 - 20,
     'b': [-8*x2 + 9*x3 - 4*x4 <= 5, -2*x2 + 10*x4 + 7*x5 <= -11, -7*x2 <= 4],
+    'obj_val': -oo
+},{
+    # 4
+    'obj_fn': 6*x1 + 6*x2 + 6,
+    'b': [-6*x1 - 2*x2 <= -9, 2*x1 + x2 <= 20],
     'obj_val': None
 }]
 

@@ -75,11 +75,10 @@ class TestRandomData(unittest.TestCase):
             # build a new case
             number_of_vars = random.randint(2, 6)
             number_of_constraints = random.randint(1, 3)
-            case = self.gen_new_case(number_of_vars, number_of_constraints)
 
             try:
-
-                result = run_all_algos(case)
+                case = self.gen_new_case(number_of_vars, number_of_constraints)
+                result = run_all_algos(case, True)
 
                 self.assertEqual(result['a'].obj_val, result['b'].obj_val)
                 self.assertEqual(result['a'].obj_val, result['c'].obj_val)

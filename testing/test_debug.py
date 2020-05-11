@@ -15,7 +15,6 @@ class TestDebug(unittest.TestCase):
 
         result = run_all_algos(case, True)
 
-        self.assertEqual(result['a'].obj_val, case.expected_obj_val)
         self.assertEqual(result['a'].obj_val, result['b'].obj_val)
         self.assertEqual(result['a'].obj_val, result['c'].obj_val)
 
