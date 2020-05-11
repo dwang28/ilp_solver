@@ -24,7 +24,10 @@ class TestRandomData(unittest.TestCase):
 
         for i in range(0, len(variables)):
 
-            coeff = random.randint(-10, 10)
+            coeff = 0
+            while coeff==0:
+                coeff = random.randint(-10, 10)
+
             obj_fn += coeff * variables[i]
 
         return obj_fn
@@ -65,7 +68,7 @@ class TestRandomData(unittest.TestCase):
 
     def test_run(self):
 
-        total_runs = 10
+        total_runs = 100
         i=0
 
         while i <= total_runs:
@@ -78,7 +81,7 @@ class TestRandomData(unittest.TestCase):
 
             try:
                 case = self.gen_new_case(number_of_vars, number_of_constraints)
-                result = run_all_algos(case, True)
+                result = run_all_algos(case, debug=False)
 
                 self.assertEqual(result['a'].obj_val, result['b'].obj_val)
                 self.assertEqual(result['a'].obj_val, result['c'].obj_val)
@@ -89,7 +92,7 @@ class TestRandomData(unittest.TestCase):
                 print(case)
                 raise e
 
-            print('passed\n')
+            print('test passed\n')
 
             i +=1
 
