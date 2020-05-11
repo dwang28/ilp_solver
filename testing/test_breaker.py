@@ -2,7 +2,7 @@ import unittest
 import random
 
 from sympy import *
-from solver import *
+from ..solver import *
 
 # To do:
 #   if test failed:

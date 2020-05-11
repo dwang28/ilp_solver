@@ -84,7 +84,7 @@ class Binary_ILP_case:
         self.pre_process()
 
     def print_case(self):
-
+        print("hello")
 
     def pre_process(self):
 
