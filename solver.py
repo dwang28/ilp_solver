@@ -83,6 +83,8 @@ class Binary_ILP_case:
 
         self.pre_process()
 
+    def print_case(self):
+
 
     def pre_process(self):
 
