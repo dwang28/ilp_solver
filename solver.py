@@ -59,12 +59,13 @@ class Binary_ILP_case:
     # variables
     # obj_fn [sympy expression]: the function to maximize or minimize
     # b: array of constraints
-    def __init__(self, variables, obj_fn, b, maximize=True):
+    def __init__(self, variables, obj_fn, b, maximize=True, expected_obj_val=None):
 
         # init
         self.variables = variables
         self.obj_fn = obj_fn
         self.b = b # all inEquality functions must be less than for now.
+        self.expected_obj_val = expected_obj_val
 
         self._variables = []
         self._obj_fn = obj_fn
@@ -83,8 +84,38 @@ class Binary_ILP_case:
 
         self.pre_process()
 
-    def print_case(self):
-        print("hello")
+    def __repr__(self): # for shell
+        return self.get_print_string()
+
+    def __str__(self): # for print
+        return self.get_print_string()
+
+    def get_print_string(self):
+
+        variables = ''
+
+        for var in self.variables:
+            variables += str(var) + ', '
+
+        variables = variables[: -2]
+
+        result = 'Case:'.ljust(10) + variables + '\n'
+        result += 'Z:'.ljust(10) + str(self.obj_fn) + '\n\n'
+
+        first_line = True
+        for inEq in self.b:
+            if first_line:
+                result += 'b:'.ljust(10) + str(inEq) + '\n'
+                first_line = False
+            else:
+                result += ''.ljust(10) + str(inEq) + '\n'
+
+        result += '\n'
+
+        if self.expected_obj_val:
+            result += 'Exp val:'.ljust(10) + str(self.expected_obj_val)
+
+        return result
 
     def pre_process(self):
 
