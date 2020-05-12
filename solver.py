@@ -69,7 +69,7 @@ class Binary_ILP_case:
 
         self._variables = []
         self._obj_fn = obj_fn
-        self._b = b
+        self._b = b[:]
 
         self.var_ref = {} # True means _xi = xi, False means _xi = (1-xi)
         self.counter_var_ref = {} # get x1 from _x1
@@ -119,6 +119,8 @@ class Binary_ILP_case:
 
     def pre_process(self):
 
+        self.covert_all_constraints_to_less_than()
+
         # update variable reference and objective fxn reference
         obj_args = self.obj_fn.args
 
@@ -157,6 +159,22 @@ class Binary_ILP_case:
         # print('Result', self._obj_fn)
         # print('Result', self.b)
         # print('Result', self._b)
+
+    def covert_all_constraints_to_less_than(self):
+
+        # print('start covert_all_constraints_to_less_than', self._b)
+
+        _b = []
+
+        for inEq in self._b:
+
+            # print('inEqu is: ', inEq)
+            if isinstance(inEq, (StrictLessThan, LessThan)):
+                _b.append(inEq)
+            else:
+                _b.append(inEq.reversedsign)
+
+        self._b = _b
 
     def _(self, var):
         return self.var_ref[var].counter_part
@@ -201,25 +219,19 @@ class Binary_ILP_case:
 
         return result
 
-    def is_feasible(self, b, var_vals):
+    def is_feasible(self, b, var_vals, debug=False):
 
-        # print('is_feasible check, ', b, var_vals)
+        for constraint in b:
 
-        for lessThanEq in b:
+            c =  constraint
 
-            if lessThanEq == False:
-                return False
+            for var_val in var_vals:
+                c = c.subs(var_val.var, var_val.val)
 
-            if lessThanEq == True:
-                continue
-
-            # print('lessThanEq, constraints: ', lessThanEq)
-            lhs = lessThanEq.lhs
-            for item in var_vals:
-                lhs = lhs.subs(item.var, item.val)
-
-            if lhs > lessThanEq.rhs:
-                return False
+                if c == False:
+                    if debug:
+                        print('\nConstraint not met: ', constraint, ' with var vals: ', var_vals, '\n')
+                    return False
 
         return True
 

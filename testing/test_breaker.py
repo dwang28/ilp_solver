@@ -7,6 +7,20 @@ from .test_helper import *
 
 class TestRandomData(unittest.TestCase):
 
+    def get_random_int(self, lower_bound, upper_bound, allow_zero=False):
+
+        num = random.randint(lower_bound, upper_bound)
+
+        if allow_zero:
+            return num
+
+        else:
+            while num == 0:
+                num = random.randint(lower_bound, upper_bound)
+
+        return num
+
+
     def gen_vars(self, number_of_vars):
 
         variables = []
@@ -18,7 +32,7 @@ class TestRandomData(unittest.TestCase):
 
     def gen_obj_fn(self, variables):
 
-        c = random.randint(-20, 20)
+        c = self.get_random_int(-20, 20, allow_zero=True)
 
         obj_fn = c
 
@@ -26,7 +40,7 @@ class TestRandomData(unittest.TestCase):
 
             coeff = 0
             while coeff==0:
-                coeff = random.randint(-10, 10)
+                coeff = self.get_random_int(-10, 10)
 
             obj_fn += coeff * variables[i]
 
@@ -46,14 +60,29 @@ class TestRandomData(unittest.TestCase):
         for i in range(0, number_of_constraints):
 
             expr = 0
+
             # generate a single lessThan inequlaity equation
-            number_of_vars_in_constraint = random.randint(1, len(variables))
+            number_of_vars_in_constraint = self.get_random_int(1, len(variables))
+
             on_off = self.get_binary_list(len(variables), number_of_vars_in_constraint)
 
             for j in range(0, len(variables)):
-                expr += random.randint(-10, 10) * on_off[j] * variables[j]
+                expr += self.get_random_int(-10, 10) * on_off[j] * variables[j]
 
-            b.append(expr <= random.randint(-20, 20))
+
+            inEqType = self.get_random_int(0, 3, allow_zero=True)
+
+            if inEqType == 0:
+                b.append(expr < self.get_random_int(-20, 20, allow_zero=True))
+
+            elif inEqType == 1:
+                b.append(expr <= self.get_random_int(-20, 20, allow_zero=True))
+
+            elif inEqType == 2:
+                b.append(expr > self.get_random_int(-20, 20, allow_zero=True))
+
+            else:
+                b.append(expr >= self.get_random_int(-20, 20, allow_zero=True))
 
         return b
 
@@ -69,33 +98,32 @@ class TestRandomData(unittest.TestCase):
     def test_run(self):
 
         total_runs = 100
-        i=0
+        debug = False
 
+        i=0
         while i <= total_runs:
 
             print('start test ' + str(i) + '/' + str(total_runs) + '... ')
 
             # build a new case
-            number_of_vars = random.randint(2, 6)
-            number_of_constraints = random.randint(1, 3)
+            number_of_vars = self.get_random_int(2, 6)
+            number_of_constraints = self.get_random_int(1, 3)
 
             try:
                 case = self.gen_new_case(number_of_vars, number_of_constraints)
-                result = run_all_algos(case, debug=False)
+                result = run_all_algos(case, debug=debug)
 
                 self.assertEqual(result['a'].obj_val, result['b'].obj_val)
                 self.assertEqual(result['a'].obj_val, result['c'].obj_val)
 
-            except Exception as e:
+                self.assertTrue(case.is_feasible(case.b, result['c'].var_vals, debug=True))
 
-                # print('Something happened')
+            except Exception as e:
                 print(case)
                 raise e
 
             print('test passed\n')
-
             i +=1
-
 
 if __name__ == '__main__':
     unittest.main()
