@@ -55,6 +55,8 @@ class VarRef:
     def get_print_string(self):
         return str((self.counter_part, 'Reverse? ', self.isReverse))
 
+# To do: support including vars not in obj fxn
+
 class Binary_ILP_case:
     # variables
     # obj_fn [sympy expression]: the function to maximize or minimize
@@ -245,6 +247,9 @@ class Binary_ILP_case:
 
     def translate_result(self, result):
 
+        print('translating result...')
+        print('result', result)
+
         if result.obj_val == -oo:
             return result
 
@@ -262,7 +267,12 @@ class Binary_ILP_case:
             else:
                 var_vals_ref[var] = val
 
+        print('var_vals_ref', var_vals_ref)
+
+
         sorted_var_vals = [] #based on order of vars
+
+        print('self.vars', self.variables)
 
         for var in self.variables:
             sorted_var_vals.append(VarVal(var, var_vals_ref[var]))
