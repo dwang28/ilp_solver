@@ -36,7 +36,7 @@ case = cases[8]
 class TestDebug(unittest.TestCase):
 
     def setUp(self): # This runs at the beginning of every test case
-        self.result = case.solve(case.algo.implicit_enumeration)
+        self.result = case.solve(case.algo.implicit_enumeration, print_run_count=True)
 
     def test_all_solve_methods_get_same_result(self):
 

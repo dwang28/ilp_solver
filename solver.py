@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from sympy import *
 from itertools import product
+from codetiming import Timer
 
 class VarVal:
     def __init__(self, var, val):
@@ -84,6 +85,7 @@ class Binary_ILP_case:
         if(maximize == False):
             self.goal = 'minimize'
 
+        self.timer = Timer(name="class", logger=None)
         self.pre_process()
 
     def __repr__(self): # for shell
@@ -302,6 +304,7 @@ class Binary_ILP_case:
         b = self._b[:]
 
         self.reset_counter()
+        self.timer.start()
 
         if algo == self.algo.brutal_divide_and_conquer:
             result = self.solve_by_brutal_divide_and_conquer(variables, obj_fn, b)
@@ -312,8 +315,11 @@ class Binary_ILP_case:
         if algo == self.algo.implicit_enumeration:
             result = self.solve_by_implicit_enumeration(variables, obj_fn, b)
 
+        elapsed_time = self.timer.stop()
+
         if print_run_count:
             print("Run count", self.get_run_count())
+            print("Runnint time - {algo} : {time:,.4f} second".format(algo=algo, time=elapsed_time))
 
         return self.translate_result(result)
 
