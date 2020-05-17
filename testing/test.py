@@ -54,9 +54,9 @@ class TestSolveMethods(unittest.TestCase):
             for case in cases:
                 result = run_all_algos(case, debug=isDebugMode)
 
-                self.assertEqual(result['a'].obj_val, case.expected_obj_val)
                 self.assertEqual(result['a'].obj_val, result['b'].obj_val)
                 self.assertEqual(result['a'].obj_val, result['c'].obj_val)
+                self.assertEqual(result['a'].obj_val, case.expected_obj_val)
 
 if __name__ == '__main__':
     unittest.main()

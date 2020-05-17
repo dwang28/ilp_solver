@@ -58,7 +58,7 @@ class VarRef:
 # To do: support including vars not in obj fxn
 
 class Binary_ILP_case:
-    # variables
+    # variables: list of sympy symbols
     # obj_fn [sympy expression]: the function to maximize or minimize
     # b: array of constraints
     def __init__(self, variables, obj_fn, b, maximize=True, expected_obj_val=None):
@@ -121,6 +121,8 @@ class Binary_ILP_case:
 
     def pre_process(self):
 
+        # print('pre_processing...')
+
         self.covert_all_constraints_to_less_than()
 
         # update variable reference and objective fxn reference
@@ -128,6 +130,15 @@ class Binary_ILP_case:
 
         # when calling args, sympy will change the order of variables appearing in expression with the constant at the first place, and
         # some arbitary order for the rest of the variables
+
+
+        for var in self.variables:
+            _var = "_" + str(var)
+            _var = Symbol(_var)
+            self._variables.append(_var)
+            self.counter_var_ref[_var] = var
+            self.var_ref[var] = VarRef(_var, False)
+
         for item in obj_args:
 
             if not isinstance(item, numbers.Integer):
@@ -139,28 +150,60 @@ class Binary_ILP_case:
                     coeff = 1
                     var = item
 
-                _var = "_" + str(var)
-                _var = Symbol(_var)
-                self._variables.append(_var)
+                _var = self.var_ref[var].counter_part
 
                 if coeff > 0:
                     self.var_ref[var] = VarRef(_var, True) # True for isReverse
                     self._obj_fn = self._obj_fn.subs(var, (1-_var))
-                    self._b =  self.get_substitute_b(self._b, var, (1-_var))
+                    self._b =  self.get_substitute_b(self._b, var, (1 -_var))
 
                 else:
-                    self.var_ref[var] = VarRef(_var, False)
                     self._obj_fn = self._obj_fn.subs(var, _var)
                     self._b =  self.get_substitute_b(self._b, var, _var)
 
-                self.counter_var_ref[_var] = var
+        # print('vars:', self.variables)
+        # print('_vars', self._variables)
+        # print('var_ref', self.var_ref)
+        # print('obj_fn', self.obj_fn)
+        # print('_obj_fn', self._obj_fn)
+        # print('b', self.b)
+        # print('_b', self._b)
+        # print('counter_far_ref', self.counter_var_ref)
+        # print('\n\n')
 
-        # print(self.variables)
-        # print(self._variables)
-        # print('Result', self.obj_fn)
-        # print('Result', self._obj_fn)
-        # print('Result', self.b)
-        # print('Result', self._b)
+    def translate_result(self, result):
+
+        # print('translating result...')
+        # print('result', result)
+
+        if result.obj_val == -oo:
+            return result
+
+        var_vals_ref = {}
+
+        for item in result.var_vals:
+
+            _var = item.var
+            val = item.val
+
+            var = self.counter_var_ref[_var]
+
+            if self.var_ref[var].isReverse:
+                var_vals_ref[var] = 1-val
+            else:
+                var_vals_ref[var] = val
+
+        # print('var_vals_ref', var_vals_ref)
+
+
+        sorted_var_vals = [] #based on order of vars
+
+        # print('self.vars', self.variables)
+
+        for var in self.variables:
+            sorted_var_vals.append(VarVal(var, var_vals_ref[var]))
+
+        return Result(result.obj_val, sorted_var_vals)
 
     def covert_all_constraints_to_less_than(self):
 
@@ -223,6 +266,9 @@ class Binary_ILP_case:
 
     def is_feasible(self, b, var_vals, debug=False):
 
+        # if debug:
+            # print('checking is feasible, b:', b, ' var_vals:', var_vals)
+
         for constraint in b:
 
             c =  constraint
@@ -231,10 +277,12 @@ class Binary_ILP_case:
                 c = c.subs(var_val.var, var_val.val)
 
                 if c == False:
-                    if debug:
-                        print('\nConstraint not met: ', constraint, ' with var vals: ', var_vals, '\n')
+                    # if debug:
+                        # print('\nConstraint not met: ', constraint, ' with var vals: ', var_vals, '\n')
                     return False
-
+        if debug:
+            print('\nFeasible, retunning true !!!\n')
+            print('b:', b, ' var_vals:', var_vals)
         return True
 
     def get_obj_fn_val(self, obj_fn, var_vals):
@@ -245,39 +293,7 @@ class Binary_ILP_case:
 
         return obj_val
 
-    def translate_result(self, result):
 
-        print('translating result...')
-        print('result', result)
-
-        if result.obj_val == -oo:
-            return result
-
-        var_vals_ref = {}
-
-        for item in result.var_vals:
-
-            _var = item.var
-            val = item.val
-
-            var = self.counter_var_ref[_var]
-
-            if self.var_ref[var].isReverse:
-                var_vals_ref[var] = 1-val
-            else:
-                var_vals_ref[var] = val
-
-        print('var_vals_ref', var_vals_ref)
-
-
-        sorted_var_vals = [] #based on order of vars
-
-        print('self.vars', self.variables)
-
-        for var in self.variables:
-            sorted_var_vals.append(VarVal(var, var_vals_ref[var]))
-
-        return Result(result.obj_val, sorted_var_vals)
 
     def solve(self, algo, print_run_count=False):
 
@@ -383,7 +399,7 @@ class Binary_ILP_case:
     def solve_by_implicit_enumeration(self, variables, obj_fn, b):
 
         # implicit enumeration assume all vars has a negative coefficient in objective function and thus best obj val will be set all vars to 0
-
+        debug = False
 
         self.i += 1
 
@@ -402,7 +418,7 @@ class Binary_ILP_case:
         for var in variables:
             var_vals.append(VarVal(var, 0))
 
-        if self.is_feasible(b, var_vals): # best case scenario
+        if self.is_feasible(b, var_vals, debug=debug): # best case scenario
             obj_val = self.get_obj_fn_val(obj_fn, var_vals)
 
             # print('all 0 is feasible, returning val:', obj_val)
@@ -422,7 +438,7 @@ class Binary_ILP_case:
 
         var_vals[0].val = 1
 
-        if self.is_feasible(b, var_vals):
+        if self.is_feasible(b, var_vals, debug=debug):
             obj_val = self.get_obj_fn_val(obj_fn, var_vals)
 
             if obj_val > best_result.obj_val:
@@ -440,7 +456,7 @@ class Binary_ILP_case:
                 best_result = Result(result_one.obj_val, [VarVal(fix_var, 1)] + result_one.var_vals)
 
 
-        # print('returning best result', best_result)
+        # print('\nreturning best result', best_result, '\n')
         return best_result
 
 if __name__ == '__main__':

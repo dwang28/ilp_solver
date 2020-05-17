@@ -97,7 +97,7 @@ class TestRandomData(unittest.TestCase):
 
     def test_run(self):
 
-        total_runs = 100
+        total_runs = 50
         debug = False
 
         i=0
